@@ -23,15 +23,15 @@ modules:
     buildsystem: simple
     sources:
       - type: file
-        url: https://github.com/enlinea777/DockControlTauri/releases/download/v1.1.1/DockControl_1.1.1_amd64.deb
-        sha256: 913fff5254eefe1238a3c49df7cfd4ad99ed23e2c16604a0c346b95153845131
+        url: https://github.com/enlinea777/DockControlTauri/releases/download/v1.2.0/DockControl_1.2.0_amd64.deb
+        sha256: 69b2960148a49650f96efc197bb533cc6c6a43056d73491ebbf760e3dc47046f
         only-arches: [x86_64]
       - type: file
         path: io.dockstation.app.metainfo.xml
     build-commands:
       - set -e
       - mkdir deb-extract
-      - ( cd deb-extract && ar -x ../DockControl_1.1.1_amd64.deb )
+      - ( cd deb-extract && ar -x ../DockControl_1.2.0_amd64.deb )
       - tar -C deb-extract -xf deb-extract/data.tar.gz
       - install -Dm755 deb-extract/usr/bin/DockControlTauri /app/bin/DockControlTauri
       - sed -i 's/^Icon=.*/Icon=io.dockstation.app/' deb-extract/usr/share/applications/DockControl.desktop
