@@ -3,7 +3,6 @@ import {
   Button,
   Drawer,
   Empty,
-  Input,
   Modal,
   Popconfirm,
   Space,
@@ -31,6 +30,7 @@ import StatsView from "../components/StatsView";
 import Workbench from "../components/Workbench";
 import SideList from "../components/SideList";
 import InfoTree from "../components/InfoTree";
+import ContainerTerminal from "../components/ContainerTerminal";
 
 function cleanName(c: ContainerSummary): string {
   const raw = c.Names?.[0] ?? c.Id?.slice(0, 12) ?? "?";
@@ -48,12 +48,10 @@ export default function Containers() {
   const [infoOpen, setInfoOpen] = useState(false);
   const [info, setInfo] = useState<unknown>(null);
   const [execOpen, setExecOpen] = useState(false);
-  const [execCmd, setExecCmd] = useState("ls -la");
-  const [execOut, setExecOut] = useState("");
-  const [execRunning, setExecRunning] = useState(false);
   const eventTick = useStore((s) => s.eventTick);
   const showStopped = useStore((s) => s.showStopped);
   const refreshTick = useStore((s) => s.refreshTick);
+  const shell = useStore((s) => s.shell);
 
   const load = useCallback(async () => {
     try {
@@ -119,17 +117,12 @@ export default function Containers() {
     }
   };
 
-  const runExec = async () => {
+  const runSystemTerminal = async () => {
     if (!selected) return;
-    setExecRunning(true);
-    setExecOut("");
     try {
-      const out = await api.containerExec(selected.Id!, ["sh", "-c", execCmd]);
-      setExecOut(out || "(sin salida)");
+      await api.containerExecSystem(selected.Id!, shell);
     } catch (e) {
-      setExecOut(String(e));
-    } finally {
-      setExecRunning(false);
+      message.error(String(e));
     }
   };
 
@@ -184,10 +177,7 @@ export default function Containers() {
                     className="round-btn"
                     shape="circle"
                     icon={<CodeOutlined />}
-                    onClick={() => {
-                      setExecOut("");
-                      setExecOpen(true);
-                    }}
+                    onClick={() => setExecOpen(true)}
                   />
                 </Tooltip>
                 <span className="action-label">Exec</span>
@@ -310,35 +300,22 @@ export default function Containers() {
 
       <Modal
         open={execOpen}
-        title="Ejecutar comando"
+        title={`Consola — ${shell}`}
         onCancel={() => setExecOpen(false)}
-        onOk={runExec}
-        okText="Ejecutar"
-        confirmLoading={execRunning}
-        width={640}
+        footer={
+          <Space>
+            <Button onClick={runSystemTerminal}>Terminal del sistema</Button>
+            <Button type="primary" onClick={() => setExecOpen(false)}>
+              Cerrar
+            </Button>
+          </Space>
+        }
+        width={900}
+        destroyOnClose
       >
-        <Input
-          value={execCmd}
-          onChange={(e) => setExecCmd(e.target.value)}
-          placeholder="ls -la"
-          onPressEnter={runExec}
-        />
-        <pre
-          style={{
-            marginTop: 12,
-            maxHeight: 320,
-            overflow: "auto",
-            background: "#0b0f14",
-            color: "#c9d1d9",
-            padding: 8,
-            borderRadius: 6,
-            fontFamily: "monospace",
-            fontSize: 12,
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {execRunning ? "Ejecutando…" : execOut}
-        </pre>
+        {selected && (
+          <ContainerTerminal id={selected.Id!} shell={shell} height={460} />
+        )}
       </Modal>
     </Workbench>
   );

@@ -42,6 +42,12 @@ pub fn run() {
             commands::container_logs,
             commands::container_stats,
             commands::container_exec,
+            commands::container_exec_start,
+            commands::container_exec_write,
+            commands::container_exec_resize,
+            commands::container_exec_stop,
+            commands::container_exec_system,
+            commands::cleanup_temp_sockets,
             // images
             commands::images_list,
             commands::image_inspect,

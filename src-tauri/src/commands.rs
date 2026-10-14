@@ -24,12 +24,10 @@ pub async fn connect_host(
     host: String,
     name: Option<String>,
 ) -> AppResult<ConnectionConfig> {
+    crate::state::cleanup_temp_sockets();
     let docker = connection::connect(&host).await?;
     docker.ping().await?;
-    let config = ConnectionConfig {
-        name: name.unwrap_or_else(|| host.clone()),
-        host,
-    };
+    let config = ConnectionConfig::with_host(name.unwrap_or_else(|| host.clone()), host);
     connection::set_current(&state, docker, config.clone())?;
     Ok(config)
 }
@@ -46,15 +44,13 @@ pub async fn connect_context(
 /// Tries the OS-specific default host and known fallbacks.
 #[tauri::command]
 pub async fn connect_local(state: State<'_, AppState>) -> AppResult<ConnectionConfig> {
+    crate::state::cleanup_temp_sockets();
     let mut last_error: Option<crate::error::AppError> = None;
     for host in crate::state::local_host_candidates() {
         match connection::connect(&host).await {
             Ok(docker) => match docker.ping().await {
                 Ok(_) => {
-                    let config = ConnectionConfig {
-                        name: "local".to_string(),
-                        host,
-                    };
+                    let config = ConnectionConfig::with_host("local".to_string(), host);
                     connection::set_current(&state, docker, config.clone())?;
                     return Ok(config);
                 }
@@ -65,6 +61,12 @@ pub async fn connect_local(state: State<'_, AppState>) -> AppResult<ConnectionCo
     }
     Err(last_error
         .unwrap_or_else(|| crate::error::AppError::msg("no se encontró un Docker local")))
+}
+
+/// Remove stale temporary socket files (prefix `temp_socket`).
+#[tauri::command]
+pub fn cleanup_temp_sockets() -> usize {
+    crate::state::cleanup_temp_sockets()
 }
 
 #[tauri::command]
@@ -200,6 +202,90 @@ pub async fn container_exec(
     user: Option<String>,
 ) -> AppResult<String> {
     containers::exec(&state, &id, cmd, user).await
+}
+
+#[tauri::command]
+pub async fn container_exec_start(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    id: String,
+    cmd: Vec<String>,
+    cols: u16,
+    rows: u16,
+) -> AppResult<String> {
+    containers::exec_start(app, &state, &id, cmd, cols, rows).await
+}
+
+#[tauri::command]
+pub fn container_exec_write(
+    state: State<'_, AppState>,
+    session: String,
+    data: String,
+) -> AppResult<()> {
+    containers::exec_write(&state, &session, &data)
+}
+
+#[tauri::command]
+pub async fn container_exec_resize(
+    state: State<'_, AppState>,
+    session: String,
+    cols: u16,
+    rows: u16,
+) -> AppResult<()> {
+    containers::exec_resize(&state, &session, cols, rows).await
+}
+
+#[tauri::command]
+pub fn container_exec_stop(state: State<'_, AppState>, session: String) -> AppResult<()> {
+    containers::exec_stop(&state, &session)
+}
+
+/// Open the container's console in an external system terminal
+/// (`docker exec -it <id> <shell>`).
+#[tauri::command]
+pub async fn container_exec_system(
+    state: State<'_, AppState>,
+    id: String,
+    shell: String,
+) -> AppResult<()> {
+    use std::process::{Command, Stdio};
+
+    let config = connection::connection_config(&state)?;
+    let host = connection::resolve_host(&config.host)
+        .await
+        .unwrap_or_else(|_| config.host.clone());
+
+    let inner = ["docker", "exec", "-it", id.as_str(), shell.as_str()];
+
+    let candidates: &[(&str, &[&str])] = &[
+        ("gnome-terminal", &["--"]),
+        ("x-terminal-emulator", &["-e"]),
+        ("konsole", &["-e"]),
+        ("xfce4-terminal", &["-e"]),
+        ("tilix", &["-e"]),
+        ("alacritty", &["-e"]),
+        ("kitty", &[]),
+        ("xterm", &["-e"]),
+    ];
+
+    for (term, prefix) in candidates {
+        let mut args: Vec<String> = prefix.iter().map(|s| s.to_string()).collect();
+        args.extend(inner.iter().map(|s| s.to_string()));
+        let spawned = Command::new(term)
+            .args(&args)
+            .env("DOCKER_HOST", &host)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn();
+        if spawned.is_ok() {
+            return Ok(());
+        }
+    }
+
+    Err(crate::error::AppError::msg(
+        "no se encontró un emulador de terminal en el sistema",
+    ))
 }
 
 // ---------------------------------------------------------------------------

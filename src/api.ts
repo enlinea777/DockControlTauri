@@ -118,6 +118,17 @@ export const api = {
   containerStats: (id: string) => invoke<string>("container_stats", { id }),
   containerExec: (id: string, cmd: string[], user?: string) =>
     invoke<string>("container_exec", { id, cmd, user }),
+  containerExecStart: (id: string, cmd: string[], cols: number, rows: number) =>
+    invoke<string>("container_exec_start", { id, cmd, cols, rows }),
+  containerExecWrite: (session: string, data: string) =>
+    invoke<void>("container_exec_write", { session, data }),
+  containerExecResize: (session: string, cols: number, rows: number) =>
+    invoke<void>("container_exec_resize", { session, cols, rows }),
+  containerExecStop: (session: string) =>
+    invoke<void>("container_exec_stop", { session }),
+  containerExecSystem: (id: string, shell: string) =>
+    invoke<void>("container_exec_system", { id, shell }),
+  cleanupTempSockets: () => invoke<number>("cleanup_temp_sockets"),
 
   imagesList: (all: boolean) => invoke<ImageSummary[]>("images_list", { all }),
   imageInspect: (name: string) => invoke<any>("image_inspect", { name }),
@@ -198,6 +209,23 @@ export function onStats(
   handler: (event: StatsEvent) => void,
 ): Promise<UnlistenFn> {
   return listen<StatsEvent>("docker-stats", (e) => handler(e.payload));
+}
+
+export interface ExecEvent {
+  id: string;
+  data: string;
+}
+
+export function onExec(
+  handler: (event: ExecEvent) => void,
+): Promise<UnlistenFn> {
+  return listen<ExecEvent>("container-exec", (e) => handler(e.payload));
+}
+
+export function onExecEnd(handler: (id: string) => void): Promise<UnlistenFn> {
+  return listen<{ id: string }>("container-exec-end", (e) =>
+    handler(e.payload.id),
+  );
 }
 
 export function onDockerEvent(

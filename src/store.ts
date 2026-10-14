@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { type ConnectionConfig } from "./api";
 
+const SHELL_KEY = "dockstation.shell";
+
+function initialShell(): string {
+  return localStorage.getItem(SHELL_KEY) || "bash";
+}
+
 interface AppStore {
   connection: ConnectionConfig | null;
   serverVersion: string;
@@ -9,12 +15,14 @@ interface AppStore {
   showStopped: boolean;
   refreshTick: number;
   statsSelection: string[];
+  shell: string;
   setConnection: (connection: ConnectionConfig | null) => void;
   setVersion: (serverVersion: string, apiVersion: string) => void;
   bumpEvent: () => void;
   setShowStopped: (value: boolean) => void;
   bumpRefresh: () => void;
   toggleStatsSelection: (id: string, checked: boolean) => void;
+  setShell: (shell: string) => void;
 }
 
 export const useStore = create<AppStore>((set) => ({
@@ -25,6 +33,7 @@ export const useStore = create<AppStore>((set) => ({
   showStopped: true,
   refreshTick: 0,
   statsSelection: [],
+  shell: initialShell(),
   setConnection: (connection) => set({ connection }),
   setVersion: (serverVersion, apiVersion) => set({ serverVersion, apiVersion }),
   bumpEvent: () => set((state) => ({ eventTick: state.eventTick + 1 })),
@@ -36,4 +45,8 @@ export const useStore = create<AppStore>((set) => ({
         ? [...new Set([...state.statsSelection, id])]
         : state.statsSelection.filter((x) => x !== id),
     })),
+  setShell: (shell) => {
+    localStorage.setItem(SHELL_KEY, shell);
+    set({ shell });
+  },
 }));

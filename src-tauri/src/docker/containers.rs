@@ -100,6 +100,172 @@ pub async fn exec(
     Ok(output)
 }
 
+/// Start an interactive (PTY) exec session inside a container.
+///
+/// Output is streamed through `container-exec` events carrying
+/// `{ id, data }`. Input is forwarded with [`exec_write`], resize with
+/// [`exec_resize`] and the session is closed with [`exec_stop`].
+pub async fn exec_start(
+    app: tauri::AppHandle,
+    state: &AppState,
+    id: &str,
+    cmd: Vec<String>,
+    cols: u16,
+    rows: u16,
+) -> AppResult<String> {
+    use bollard::exec::{CreateExecOptions, ResizeExecOptions, StartExecResults};
+    use futures_util::StreamExt;
+    use tauri::Manager;
+
+    let docker = crate::docker::connection::current(state)?;
+    let config = CreateExecOptions::<String> {
+        cmd: Some(cmd),
+        attach_stdin: Some(true),
+        attach_stdout: Some(true),
+        attach_stderr: Some(true),
+        tty: Some(true),
+        ..Default::default()
+    };
+    let created = docker.create_exec(id, config).await?;
+    let exec_id = created.id;
+
+    let _ = docker
+        .resize_exec(
+            &exec_id,
+            ResizeExecOptions {
+                height: rows.max(1),
+                width: cols.max(1),
+            },
+        )
+        .await;
+
+    let session = uuid::Uuid::new_v4().to_string();
+
+    match docker.start_exec(&exec_id, None).await? {
+        StartExecResults::Attached {
+            mut output,
+            mut input,
+        } => {
+            let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<Vec<u8>>();
+            {
+                let mut map = state
+                    .exec_sessions
+                    .lock()
+                    .map_err(|_| AppError::msg("estado bloqueado"))?;
+                map.insert(
+                    session.clone(),
+                    crate::state::ExecSession {
+                        input: tx,
+                        exec_id: exec_id.clone(),
+                    },
+                );
+            }
+
+            // Forward input from the frontend to the container's stdin.
+            tokio::spawn(async move {
+                use tokio::io::AsyncWriteExt;
+                while let Some(data) = rx.recv().await {
+                    if input.write_all(&data).await.is_err() {
+                        break;
+                    }
+                    let _ = input.flush().await;
+                }
+            });
+
+            // Stream output back to the frontend.
+            let app2 = app.clone();
+            let sid = session.clone();
+            tokio::spawn(async move {
+                while let Some(item) = output.next().await {
+                    match item {
+                        Ok(log) => {
+                            let _ = app2.emit(
+                                "container-exec",
+                                serde_json::json!({ "id": sid, "data": log.to_string() }),
+                            );
+                        }
+                        Err(err) => {
+                            let _ = app2.emit(
+                                "container-exec",
+                                serde_json::json!({
+                                    "id": sid,
+                                    "data": format!("\r\n[error] {err}\r\n"),
+                                }),
+                            );
+                            break;
+                        }
+                    }
+                }
+                if let Some(state) = app2.try_state::<AppState>() {
+                    if let Ok(mut map) = state.exec_sessions.lock() {
+                        map.remove(&sid);
+                    }
+                }
+                let _ = app2.emit("container-exec-end", serde_json::json!({ "id": sid }));
+            });
+        }
+        StartExecResults::Detached => {}
+    }
+
+    Ok(session)
+}
+
+/// Write data to an interactive exec session.
+pub fn exec_write(state: &AppState, session: &str, data: &str) -> AppResult<()> {
+    let map = state
+        .exec_sessions
+        .lock()
+        .map_err(|_| AppError::msg("estado bloqueado"))?;
+    let handle = map
+        .get(session)
+        .ok_or_else(|| AppError::msg("sesión de consola no encontrada"))?;
+    handle
+        .input
+        .send(data.as_bytes().to_vec())
+        .map_err(|_| AppError::msg("la consola se cerró"))?;
+    Ok(())
+}
+
+/// Resize an interactive exec session's PTY.
+pub async fn exec_resize(
+    state: &AppState,
+    session: &str,
+    cols: u16,
+    rows: u16,
+) -> AppResult<()> {
+    use bollard::exec::ResizeExecOptions;
+    let exec_id = {
+        let map = state
+            .exec_sessions
+            .lock()
+            .map_err(|_| AppError::msg("estado bloqueado"))?;
+        map.get(session)
+            .map(|s| s.exec_id.clone())
+            .ok_or_else(|| AppError::msg("sesión de consola no encontrada"))?
+    };
+    let docker = crate::docker::connection::current(state)?;
+    docker
+        .resize_exec(
+            &exec_id,
+            ResizeExecOptions {
+                height: rows.max(1),
+                width: cols.max(1),
+            },
+        )
+        .await?;
+    Ok(())
+}
+
+/// Close an interactive exec session.
+pub fn exec_stop(state: &AppState, session: &str) -> AppResult<()> {
+    let mut map = state
+        .exec_sessions
+        .lock()
+        .map_err(|_| AppError::msg("estado bloqueado"))?;
+    map.remove(session);
+    Ok(())
+}
+
 /// Stream the logs of a container to the frontend. Emits `docker-log` events
 /// carrying `{ id, line }` and a final `docker-log-end` event with `{ id }`.
 pub async fn stream_logs(
