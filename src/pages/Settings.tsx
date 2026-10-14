@@ -28,6 +28,8 @@ export default function Settings() {
   const serverVersion = useStore((s) => s.serverVersion);
   const shell = useStore((s) => s.shell);
   const setShell = useStore((s) => s.setShell);
+  const theme = useStore((s) => s.theme);
+  const setTheme = useStore((s) => s.setTheme);
   const [autoConnect, setAutoConnect] = useState(isAutoConnectEnabled());
   const [custom, setCustom] = useState(!SHELL_PRESETS.includes(shell));
   const [customValue, setCustomValue] = useState(
@@ -158,6 +160,26 @@ export default function Settings() {
         items={[
           { key: "general", label: "General", children: general },
           { key: "console", label: "Consola", children: consoleTab },
+          {
+            key: "appearance",
+            label: "Apariencia",
+            children: (
+              <Card title="Tema">
+                <Space direction="vertical">
+                  <Typography.Text type="secondary">
+                    Elige el aspecto de la aplicación.
+                  </Typography.Text>
+                  <Radio.Group
+                    value={theme}
+                    onChange={(e) => setTheme(e.target.value)}
+                  >
+                    <Radio value="light">Claro (luminoso)</Radio>
+                    <Radio value="dark">Oscuro</Radio>
+                  </Radio.Group>
+                </Space>
+              </Card>
+            ),
+          },
         ]}
       />
     </div>

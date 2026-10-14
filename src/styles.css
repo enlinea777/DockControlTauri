@@ -384,3 +384,90 @@ body {
 .ant-menu-horizontal > .ant-menu-item-selected {
   font-weight: 400;
 }
+
+/* ---- Dark theme (Dracula palette) ---- */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] body {
+  background: #282a36;
+  color: #f8f8f2;
+}
+
+[data-theme="dark"] .ant-layout {
+  background: #21222c;
+}
+
+[data-theme="dark"] .workbench {
+  background: #21222c;
+}
+
+[data-theme="dark"] .workbench-list {
+  background: #282a36;
+  border-left-color: #44475a;
+}
+
+[data-theme="dark"] .side-list-header {
+  border-bottom-color: #44475a;
+}
+
+[data-theme="dark"] .side-item {
+  border-bottom-color: #343746;
+}
+
+[data-theme="dark"] .side-item:hover {
+  background: #343746;
+}
+
+[data-theme="dark"] .side-item-active {
+  background: #44475a;
+  box-shadow: inset 3px 0 0 #bd93f9;
+}
+
+[data-theme="dark"] .side-item-name {
+  color: #f8f8f2;
+}
+
+[data-theme="dark"] .side-item-meta {
+  color: #6272a4;
+}
+
+[data-theme="dark"] .status-dot {
+  background: #6272a4;
+}
+
+[data-theme="dark"] .status-dot-running {
+  background: #50fa7b;
+  box-shadow: 0 0 0 3px rgba(80, 250, 123, 0.15);
+}
+
+[data-theme="dark"] .chart-title {
+  color: #f8f8f2;
+}
+
+[data-theme="dark"] .chart-overlay {
+  background: rgba(40, 42, 54, 0.7);
+  color: #f8f8f2;
+}
+
+[data-theme="dark"] .chart-axis,
+[data-theme="dark"] .chart-footer,
+[data-theme="dark"] .lc-yaxis,
+[data-theme="dark"] .lc-xaxis {
+  color: #6272a4;
+}
+
+[data-theme="dark"] .info-key {
+  color: #f8f8f2;
+}
+
+[data-theme="dark"] .info-value {
+  color: #8be9fd;
+}
+
+[data-theme="dark"] .info-colon,
+[data-theme="dark"] .info-type,
+[data-theme="dark"] .info-arrow {
+  color: #6272a4;
+}

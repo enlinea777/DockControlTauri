@@ -64,6 +64,7 @@ moderna inspirada en DockStation, construida con **Tauri 2 + Rust** y
 - **Conexiones**: contextos de Docker, hosts `unix://`, `tcp://`, `ssh://`,
   `npipe://` y conexiones guardadas.
 - **Auto-conexión** al Docker local al iniciar (configurable en Preferencias).
+- **Tema claro / oscuro** (Preferencias → Apariencia).
 - Ventana sin bordes con controles integrados y barra de menú arrastrable.
 
 ## Descarga
@@ -82,29 +83,29 @@ enlace de arriba y baja a **Assets**):
 ### Debian / Ubuntu (.deb)
 
 ```bash
-sudo dpkg -i DockControl_1.1.1_amd64.deb
+sudo dpkg -i DockControl_1.2.0_amd64.deb
 sudo apt -f install   # resuelve dependencias si hiciera falta
 ```
 
 ### Fedora / RHEL / openSUSE (.rpm)
 
 ```bash
-sudo rpm -i DockControl-1.1.1-1.x86_64.rpm
+sudo rpm -i DockControl-1.2.0-1.x86_64.rpm
 # o
-sudo dnf install ./DockControl-1.1.1-1.x86_64.rpm
+sudo dnf install ./DockControl-1.2.0-1.x86_64.rpm
 ```
 
 ### AppImage (cualquier distribución Linux)
 
 ```bash
-chmod +x DockControl_1.1.1_amd64.AppImage
-./DockControl_1.1.1_amd64.AppImage
+chmod +x DockControl_1.2.0_amd64.AppImage
+./DockControl_1.2.0_amd64.AppImage
 ```
 
 ### Flatpak
 
 ```bash
-flatpak install --user ./DockControl_1.1.1_x86_64.flatpak
+flatpak install --user ./DockControl_1.2.0_x86_64.flatpak
 flatpak run io.dockstation.app
 ```
 
@@ -119,7 +120,7 @@ flatpak run io.dockstation.app
 
 ### Windows (.exe)
 
-Ejecuta `DockControl_1.1.1_x64-setup.exe` y sigue el asistente.
+Ejecuta `DockControl_1.2.0_x64-setup.exe` y sigue el asistente.
 
 > La aplicación **no está firmada** digitalmente. Windows SmartScreen puede
 > avisar; pulsa "Más información" → "Ejecutar de todas formas".
@@ -156,6 +157,7 @@ npm run tauri build          # compilar binario y paquetes
 
 | Versión | Fecha      | Notas |
 | ------- | ---------- | ----- |
+| 1.2.0   | 2026-10-14 | Consola interactiva de contenedores (xterm, shell `bash`/`sh`/personalizado en Preferencias), terminal del sistema, detección automática del shell disponible, tema claro/oscuro, limpieza de sockets temporales (SSH). |
 | 1.1.1   | 2026-10-14 | Detección del host Docker según el SO (Windows `npipe://`, macOS/Linux `unix://`) con fallbacks; gráficas de stats con cuadrícula y ejes; iconos originales de DockStation. Releases multi-plataforma: `.deb`, `.rpm`, `.AppImage` (Linux), `.exe` (Windows), `.dmg` (macOS x64 y arm64). |
 | 1.0.0   | 2026-10-14 | Primera versión. Contenedores, imágenes, proyectos Compose, monitor de estadísticas, puertos, conexiones, auto-conexión local. Paquetes `.deb` y `.AppImage`. |
 

@@ -2,9 +2,16 @@ import { create } from "zustand";
 import { type ConnectionConfig } from "./api";
 
 const SHELL_KEY = "dockstation.shell";
+const THEME_KEY = "dockstation.theme";
 
 function initialShell(): string {
   return localStorage.getItem(SHELL_KEY) || "bash";
+}
+
+export type ThemeMode = "light" | "dark";
+
+function initialTheme(): ThemeMode {
+  return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
 }
 
 interface AppStore {
@@ -16,6 +23,7 @@ interface AppStore {
   refreshTick: number;
   statsSelection: string[];
   shell: string;
+  theme: ThemeMode;
   setConnection: (connection: ConnectionConfig | null) => void;
   setVersion: (serverVersion: string, apiVersion: string) => void;
   bumpEvent: () => void;
@@ -23,6 +31,7 @@ interface AppStore {
   bumpRefresh: () => void;
   toggleStatsSelection: (id: string, checked: boolean) => void;
   setShell: (shell: string) => void;
+  setTheme: (theme: ThemeMode) => void;
 }
 
 export const useStore = create<AppStore>((set) => ({
@@ -34,6 +43,7 @@ export const useStore = create<AppStore>((set) => ({
   refreshTick: 0,
   statsSelection: [],
   shell: initialShell(),
+  theme: initialTheme(),
   setConnection: (connection) => set({ connection }),
   setVersion: (serverVersion, apiVersion) => set({ serverVersion, apiVersion }),
   bumpEvent: () => set((state) => ({ eventTick: state.eventTick + 1 })),
@@ -48,5 +58,9 @@ export const useStore = create<AppStore>((set) => ({
   setShell: (shell) => {
     localStorage.setItem(SHELL_KEY, shell);
     set({ shell });
+  },
+  setTheme: (theme) => {
+    localStorage.setItem(THEME_KEY, theme);
+    set({ theme });
   },
 }));

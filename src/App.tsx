@@ -61,12 +61,6 @@ export default function App() {
         const config = await api.connectLocal();
         if (cancelled) return;
         setConnection(config);
-        try {
-          const version = await api.dockerVersion();
-          setVersion(String(version.Version ?? ""), String(version.ApiVersion ?? ""));
-        } catch {
-          /* ignore */
-        }
       } catch {
         /* no local docker available; stay on connect screen */
       }
@@ -74,7 +68,28 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [connection, setConnection, setVersion]);
+  }, [connection, setConnection]);
+
+  // Refresh the reported Docker version whenever the active connection changes
+  // (local, context or SSH), so the version label never shows a stale value.
+  useEffect(() => {
+    if (!connection) return;
+    let cancelled = false;
+    setVersion("", "");
+    api
+      .dockerVersion()
+      .then((version) => {
+        if (cancelled) return;
+        setVersion(
+          String(version.Version ?? ""),
+          String(version.ApiVersion ?? ""),
+        );
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [connection?.host, connection?.name, setVersion]);
 
   useEffect(() => {
     if (!connection) return;

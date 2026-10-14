@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, theme as antdTheme } from "antd";
 import { HashRouter } from "react-router-dom";
 import "antd/dist/reset.css";
 import App from "./App";
 import { api } from "./api";
+import { useStore } from "./store";
 import "./styles.css";
 
 const report = (level: string, message: string) => {
@@ -48,12 +49,28 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
+function Root() {
+  const themeMode = useStore((s) => s.theme);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = themeMode;
+  }, [themeMode]);
+
+  const dark = themeMode === "dark";
+
+  return (
     <ConfigProvider
       theme={{
-        algorithm: theme.defaultAlgorithm,
-        token: { colorPrimary: "#1769aa" },
+        algorithm: dark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        token: dark
+          ? {
+              colorPrimary: "#bd93f9",
+              colorInfo: "#8be9fd",
+              colorBgBase: "#282a36",
+              colorTextBase: "#f8f8f2",
+              borderRadius: 6,
+            }
+          : { colorPrimary: "#1769aa" },
       }}
     >
       <ErrorBoundary>
@@ -62,5 +79,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         </HashRouter>
       </ErrorBoundary>
     </ConfigProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <React.StrictMode>
+    <Root />
   </React.StrictMode>,
 );
