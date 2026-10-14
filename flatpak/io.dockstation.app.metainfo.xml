@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.dockstation.app</id>
+  <launchable type="desktop-id">io.dockstation.app.desktop</launchable>
+  <name>DockControl</name>
+  <developer id="io.github.enlinea777">
+    <name>John Chacón</name>
+  </developer>
+  <content_rating type="oars-1.1" />
+  <keywords>
+    <keyword>docker</keyword>
+    <keyword>container</keyword>
+    <keyword>compose</keyword>
+    <keyword>devops</keyword>
+  </keywords>
+  <branding>
+    <color type="primary" scheme_preference="light">#1769aa</color>
+    <color type="primary" scheme_preference="dark">#0b3d6e</color>
+  </branding>
+  <recommends>
+    <display_length compare="ge">720</display_length>
+  </recommends>
+  <summary>Administra Docker: contenedores, imágenes, Compose y estadísticas</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <url type="homepage">https://github.com/enlinea777/DockControlTauri</url>
+  <url type="bugtracker">https://github.com/enlinea777/DockControlTauri/issues</url>
+  <url type="vcs-browser">https://github.com/enlinea777/DockControlTauri</url>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <description>
+    <p>
+      DockControl es una aplicación de escritorio para administrar Docker.
+      Permite ver y operar contenedores, imágenes, proyectos de Docker Compose,
+      puertos y conexiones a hosts locales o remotos.
+    </p>
+    <p>Características:</p>
+    <ul>
+      <li>Lista de contenedores con acciones y consola de logs.</li>
+      <li>Gráficas de CPU, memoria, IO de disco y IO de red.</li>
+      <li>Proyectos Compose: servicios, logs y editor de docker-compose.yml.</li>
+      <li>Monitor de estadísticas en vivo de todos los contenedores.</li>
+      <li>Conexiones por socket local, TCP, SSH y contextos de Docker.</li>
+    </ul>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/enlinea777/DockControlTauri/master/show.png</image>
+      <caption>Contenedores y detalles</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="1.1.1" date="2026-10-14">
+      <description>
+        <ul>
+          <li>Detección del host Docker según el sistema operativo.</li>
+          <li>Gráficas de estadísticas con cuadrícula y ejes.</li>
+          <li>Empaquetado Flatpak.</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  <update_contact>enlinea777@gmail.com</update_contact>
+</component>

@@ -28,7 +28,7 @@ moderna inspirada en DockStation, construida con **Tauri 2 + Rust** y
 
 Los paquetes precompilados están en la página de **Releases**:
 
-- **Linux**: `DockControl_<versión>_amd64.deb`, `DockControl-<versión>-1.x86_64.rpm`, `DockControl_<versión>_amd64.AppImage`
+- **Linux**: `DockControl_<versión>_amd64.deb`, `DockControl-<versión>-1.x86_64.rpm`, `DockControl_<versión>_amd64.AppImage`, `DockControl_<versión>_x86_64.flatpak`
 - **Windows**: `DockControl_<versión>_x64-setup.exe` (NSIS)
 - **macOS**: `DockControl_<versión>_x64.dmg` (Intel) y `DockControl_<versión>_aarch64.dmg` (Apple Silicon)
 
@@ -55,6 +55,18 @@ sudo dnf install ./DockControl-1.1.1-1.x86_64.rpm
 chmod +x DockControl_1.1.1_amd64.AppImage
 ./DockControl_1.1.1_amd64.AppImage
 ```
+
+### Flatpak
+
+```bash
+flatpak install --user ./DockControl_1.1.1_x86_64.flatpak
+flatpak run io.dockstation.app
+```
+
+> El Flatpak da acceso al socket de Docker (`/run/docker.sock`) y a la CLI
+> `docker` del host para las funciones de Docker Compose. El manifiesto está en
+> [`flatpak/io.dockstation.app.yml`](flatpak/io.dockstation.app.yml) y puede
+> enviarse a Flathub (fork de `flathub/flathub`, rama `new-pr`).
 
 ### Windows (.exe)
 

@@ -1,0 +1,43 @@
+id: io.dockstation.app
+runtime: org.gnome.Platform
+runtime-version: "46"
+sdk: org.gnome.Sdk
+command: DockControlTauri
+
+finish-args:
+  # Ventana
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # Acceso al daemon de Docker (socket local) y a la CLI `docker` del host
+  - --filesystem=/run/docker.sock
+  - --filesystem=/var/run/docker.sock
+  - --filesystem=host
+  - --env=PATH=/app/bin:/usr/bin:/run/host/usr/bin
+  # Portales
+  - --talk-name=org.freedesktop.portal.*
+  # Ayuda con webviews negros en Wayland
+  - --env=WEBKIT_DISABLE_COMPOSITING_MODE=1
+
+modules:
+  - name: dockcontrol
+    buildsystem: simple
+    sources:
+      # El .deb se copia aquí por el CI antes de construir el Flatpak.
+      - type: file
+        path: DockControl.deb
+      - type: file
+        path: io.dockstation.app.metainfo.xml
+    build-commands:
+      - set -e
+      - mkdir deb-extract
+      - ( cd deb-extract && ar -x ../DockControl.deb )
+      - tar -C deb-extract -xf deb-extract/data.tar.gz
+      - install -Dm755 deb-extract/usr/bin/DockControlTauri /app/bin/DockControlTauri
+      - sed -i 's/^Icon=.*/Icon=io.dockstation.app/' deb-extract/usr/share/applications/DockControl.desktop
+      - install -Dm644 deb-extract/usr/share/applications/DockControl.desktop /app/share/applications/io.dockstation.app.desktop
+      - install -Dm644 deb-extract/usr/share/icons/hicolor/128x128/apps/DockControlTauri.png /app/share/icons/hicolor/128x128/apps/io.dockstation.app.png
+      - install -Dm644 deb-extract/usr/share/icons/hicolor/32x32/apps/DockControlTauri.png /app/share/icons/hicolor/32x32/apps/io.dockstation.app.png
+      - install -Dm644 deb-extract/usr/share/icons/hicolor/256x256@2/apps/DockControlTauri.png /app/share/icons/hicolor/256x256@2/apps/io.dockstation.app.png
+      - install -Dm644 io.dockstation.app.metainfo.xml /app/share/metainfo/io.dockstation.app.metainfo.xml

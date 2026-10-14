@@ -72,10 +72,84 @@ jobs:
           releaseBody: |
             Paquetes precompilados de DockControl.
 
-            - Linux: `.deb`, `.rpm`, `.AppImage`
+            - Linux: `.deb`, `.rpm`, `.AppImage`, `.flatpak`
             - Windows: `.exe` (NSIS)
             - macOS: `.dmg` (x64 y arm64)
           releaseDraft: false
           prerelease: false
           retryAttempts: 2
           args: ${{ matrix.args }}
+
+  flatpak:
+    needs: publish
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libfuse2 \
+            libxdo-dev \
+            xdg-utils \
+            build-essential \
+            curl wget file
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Read version
+        id: version
+        run: echo "value=$(node -p "require('./src-tauri/tauri.conf.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Build .deb
+        run: npm run tauri build -- --bundles deb
+
+      - name: Stage deb for flatpak
+        run: cp src-tauri/target/release/bundle/deb/*.deb flatpak/DockControl.deb
+
+      - name: Install flatpak tooling
+        run: |
+          sudo apt-get install -y flatpak flatpak-builder
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y --noninteractive flathub org.gnome.Platform//46 org.gnome.Sdk//46
+
+      - name: Build flatpak
+        run: |
+          flatpak-builder \
+            --repo=flatpak-repo \
+            --force-clean \
+            --disable-rofiles-fuse \
+            --default-branch=stable \
+            build-dir flatpak/io.dockstation.app.yml
+          flatpak build-bundle flatpak-repo \
+            "DockControl_${{ steps.version.outputs.value }}_x86_64.flatpak" \
+            io.dockstation.app stable
+
+      - name: Upload flatpak to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: DockControl_*_x86_64.flatpak

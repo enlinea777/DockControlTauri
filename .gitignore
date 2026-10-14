@@ -32,3 +32,8 @@ build/
 # Env
 .env
 .env.*
+
+# Flatpak build staging
+flatpak/DockControl.deb
+flatpak-repo/
+build-dir/
