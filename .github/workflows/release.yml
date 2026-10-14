@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-13
-            args: "--target x86_64-apple-darwin"
-          - platform: macos-14
+          - platform: macos-latest
             args: "--target aarch64-apple-darwin"
+          - platform: macos-latest
+            args: "--target x86_64-apple-darwin"
           - platform: ubuntu-22.04
             args: "--bundles deb,rpm,appimage"
           - platform: windows-latest
@@ -35,13 +35,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: lts/*
           cache: npm
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ startsWith(matrix.platform, 'macos-13') && 'x86_64-apple-darwin' || startsWith(matrix.platform, 'macos-14') && 'aarch64-apple-darwin' || '' }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Cache Rust
         uses: swatinem/rust-cache@v2
@@ -59,14 +59,15 @@ jobs:
             patchelf \
             libfuse2 \
             libxdo-dev \
+            xdg-utils \
             build-essential \
-            curl wget file libssl-dev
+            curl wget file
 
       - name: Install frontend dependencies
         run: npm ci
 
       - name: Build and publish
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -80,4 +81,5 @@ jobs:
             - macOS: `.dmg` (x64 y arm64)
           releaseDraft: false
           prerelease: false
+          retryAttempts: 2
           args: ${{ matrix.args }}
