@@ -104,9 +104,13 @@ flatpak run io.dockstation.app
 ```
 
 > El Flatpak da acceso al socket de Docker (`/run/docker.sock`) y a la CLI
-> `docker` del host para las funciones de Docker Compose. El manifiesto está en
-> [`flatpak/io.dockstation.app.yml`](flatpak/io.dockstation.app.yml) y puede
-> enviarse a Flathub (fork de `flathub/flathub`, rama `new-pr`).
+> `docker` del host para las funciones de Docker Compose.
+>
+> **Flathub**: el manifiesto listo para enviar está en
+> [`flatpak/flathub/io.dockstation.app.yml`](flatpak/flathub/io.dockstation.app.yml)
+> (descarga el `.deb` del release y lo empaqueta). Para publicar: haz *fork* de
+> [`flathub/flathub`](https://github.com/flathub/flathub), crea la rama `new-pr`,
+> añade el manifiesto + `io.dockstation.app.metainfo.xml` y abre un PR.
 
 ### Windows (.exe)
 
