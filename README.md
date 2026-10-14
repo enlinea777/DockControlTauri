@@ -28,24 +28,50 @@ moderna inspirada en DockStation, construida con **Tauri 2 + Rust** y
 
 Los paquetes precompilados están en la página de **Releases**:
 
-- **Debian/Ubuntu** (`.deb`): `DockControl_<versión>_amd64.deb`
-- **AppImage** (`.AppImage`): `DockControl_<versión>_amd64.AppImage`
+- **Linux**: `DockControl_<versión>_amd64.deb`, `DockControl-<versión>-1.x86_64.rpm`, `DockControl_<versión>_amd64.AppImage`
+- **Windows**: `DockControl_<versión>_x64-setup.exe` (NSIS)
+- **macOS**: `DockControl_<versión>_x64.dmg` (Intel) y `DockControl_<versión>_aarch64.dmg` (Apple Silicon)
 
 ## Instalación
 
 ### Debian / Ubuntu (.deb)
 
 ```bash
-sudo dpkg -i DockControl_1.0.0_amd64.deb
+sudo dpkg -i DockControl_1.1.1_amd64.deb
 sudo apt -f install   # resuelve dependencias si hiciera falta
 ```
 
-### AppImage (cualquier distribución)
+### Fedora / RHEL / openSUSE (.rpm)
 
 ```bash
-chmod +x DockControl_1.0.0_amd64.AppImage
-./DockControl_1.0.0_amd64.AppImage
+sudo rpm -i DockControl-1.1.1-1.x86_64.rpm
+# o
+sudo dnf install ./DockControl-1.1.1-1.x86_64.rpm
 ```
+
+### AppImage (cualquier distribución Linux)
+
+```bash
+chmod +x DockControl_1.1.1_amd64.AppImage
+./DockControl_1.1.1_amd64.AppImage
+```
+
+### Windows (.exe)
+
+Ejecuta `DockControl_1.1.1_x64-setup.exe` y sigue el asistente.
+
+> La aplicación **no está firmada** digitalmente. Windows SmartScreen puede
+> avisar; pulsa "Más información" → "Ejecutar de todas formas".
+
+### macOS (.dmg)
+
+Abre el `.dmg` y arrastra DockControl a Aplicaciones.
+
+> La aplicación **no está firmada/notarizada**. Al abrirla por primera vez,
+> usa clic derecho → **Abrir** (o Ajustes de Sistema → Privacidad y seguridad →
+> "Abrir de todas formas"). Elige el `.dmg` **x64** para Intel o **aarch64**
+> para Apple Silicon.
+
 
 ## Compilar desde el código
 
@@ -69,6 +95,7 @@ npm run tauri build          # compilar binario y paquetes
 
 | Versión | Fecha      | Notas |
 | ------- | ---------- | ----- |
+| 1.1.1   | 2026-10-14 | Detección del host Docker según el SO (Windows `npipe://`, macOS/Linux `unix://`) con fallbacks; gráficas de stats con cuadrícula y ejes; iconos originales de DockStation. Releases multi-plataforma: `.deb`, `.rpm`, `.AppImage` (Linux), `.exe` (Windows), `.dmg` (macOS x64 y arm64). |
 | 1.0.0   | 2026-10-14 | Primera versión. Contenedores, imágenes, proyectos Compose, monitor de estadísticas, puertos, conexiones, auto-conexión local. Paquetes `.deb` y `.AppImage`. |
 
 ## Tecnologías

@@ -43,13 +43,28 @@ pub async fn connect_context(
 }
 
 /// Auto-connect to the local docker socket (or the `DOCKER_HOST` value).
+/// Tries the OS-specific default host and known fallbacks.
 #[tauri::command]
 pub async fn connect_local(state: State<'_, AppState>) -> AppResult<ConnectionConfig> {
-    let config = ConnectionConfig::default();
-    let docker = connection::connect(&config.host).await?;
-    docker.ping().await?;
-    connection::set_current(&state, docker, config.clone())?;
-    Ok(config)
+    let mut last_error: Option<crate::error::AppError> = None;
+    for host in crate::state::local_host_candidates() {
+        match connection::connect(&host).await {
+            Ok(docker) => match docker.ping().await {
+                Ok(_) => {
+                    let config = ConnectionConfig {
+                        name: "local".to_string(),
+                        host,
+                    };
+                    connection::set_current(&state, docker, config.clone())?;
+                    return Ok(config);
+                }
+                Err(err) => last_error = Some(err.into()),
+            },
+            Err(err) => last_error = Some(err),
+        }
+    }
+    Err(last_error
+        .unwrap_or_else(|| crate::error::AppError::msg("no se encontró un Docker local")))
 }
 
 #[tauri::command]
