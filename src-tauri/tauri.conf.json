@@ -27,6 +27,14 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "publisher": "John Chacón",
+    "homepage": "https://github.com/enlinea777/DockControlTauri",
+    "copyright": "Copyright © 2026 John Chacón",
+    "license": "GPL-3.0-or-later",
+    "licenseFile": "../LICENSE",
+    "category": "DeveloperTool",
+    "shortDescription": "Administra Docker: contenedores, imágenes, Compose y estadísticas",
+    "longDescription": "DockControl es una aplicación de escritorio para administrar Docker. Permite ver y operar contenedores, imágenes, proyectos de Docker Compose, puertos y conexiones a hosts locales o remotos. Incluye consola de logs, gráficas de CPU, memoria, IO de disco y de red, y un monitor de estadísticas en vivo.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -36,8 +44,15 @@
     ],
     "linux": {
       "deb": {
+        "section": "utils",
         "files": {
-          "/usr/share/metainfo/io.dockstation.app.metainfo.xml": "../flatpak/io.dockstation.app.metainfo.xml"
+          "/usr/share/metainfo/io.dockstation.app.metainfo.xml": "io.dockstation.app.metainfo.xml",
+          "/usr/share/icons/hicolor/512x512/apps/DockControlTauri.png": "app-icon.png"
+        }
+      },
+      "rpm": {
+        "files": {
+          "/usr/share/metainfo/io.dockstation.app.metainfo.xml": "io.dockstation.app.metainfo.xml"
         }
       }
     }

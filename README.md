@@ -1,11 +1,48 @@
 # DockControl
 
+<div align="center">
+
+![GitHub Release](https://img.shields.io/github/v/release/enlinea777/DockControlTauri)
+[![release](https://github.com/enlinea777/DockControlTauri/actions/workflows/release.yml/badge.svg)](https://github.com/enlinea777/DockControlTauri/actions/workflows/release.yml)
+[![built_with-Rust](https://img.shields.io/badge/built_with-Rust-dca282.svg?style=flat-square)](https://www.rust-lang.org/)
+
+</div>
+
+<div align="center">
+
+[![Debian Support](https://img.shields.io/badge/Debian-E95420?style=for-the-badge&logo=debian&logoColor=white)](https://github.com/enlinea777/DockControlTauri/releases)
+[![Fedora Support](https://img.shields.io/badge/fedora-0078D6?style=for-the-badge&logo=fedora&logoColor=white)](https://github.com/enlinea777/DockControlTauri/releases)
+[![AppImage Support](https://img.shields.io/badge/AppImage-647d88?style=for-the-badge&logo=appimage&logoColor=white)](https://github.com/enlinea777/DockControlTauri/releases)
+[![Flatpak Support](https://img.shields.io/badge/Flatpak-4A90D9?style=for-the-badge&logo=flatpak&logoColor=white)](https://github.com/enlinea777/DockControlTauri/releases)
+[![MacOS Support](https://img.shields.io/badge/Macos-adb8c5?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/enlinea777/DockControlTauri/releases)
+[![Windows Support](https://img.shields.io/badge/windows-00A3EE?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/enlinea777/DockControlTauri/releases)
+
+</div>
+
 Aplicación de escritorio para administrar **Docker** (contenedores, imágenes,
 proyectos Compose, monitor de estadísticas, puertos y conexiones). Reescritura
 moderna inspirada en DockStation, construida con **Tauri 2 + Rust** y
 **React 19**.
 
 ![DockControl](show.png)
+
+> ⚠️ **Un detalle importante en Ubuntu (y en otros Linux)**
+>
+> Para que DockControl pueda conectarse automáticamente a tus contenedores sin
+> pedirte permisos de administrador (`sudo`) cada vez que abre, tu usuario debe
+> pertenecer al grupo de **Docker**.
+>
+> Si la aplicación se queda **cargando o en gris** al iniciar, ejecuta esto en
+> tu terminal, **cierra sesión** en Ubuntu y vuelve a entrar:
+>
+> ```bash
+> sudo usermod -aG docker $USER
+> ```
+>
+> En **macOS** (Docker Desktop) el socket lo gestiona la aplicación: asegúrate de
+> que **Docker Desktop esté abierto y en ejecución** antes de lanzar DockControl.
+> Si se queda en gris, abre Docker Desktop, espera a que diga “Docker is running”
+> y reinicia DockControl. No es necesario `usermod`.
 
 ## Características
 
@@ -26,7 +63,10 @@ moderna inspirada en DockStation, construida con **Tauri 2 + Rust** y
 
 ## Descarga
 
-Los paquetes precompilados están en la página de **Releases**:
+📥 **Descarga la última versión aquí → [Releases](https://github.com/enlinea777/DockControlTauri/releases/latest)**
+
+Los paquetes precompilados están en la página de **Releases** (haz clic en el
+enlace de arriba y baja a **Assets**):
 
 - **Linux**: `DockControl_<versión>_amd64.deb`, `DockControl-<versión>-1.x86_64.rpm`, `DockControl_<versión>_amd64.AppImage`, `DockControl_<versión>_x86_64.flatpak`
 - **Windows**: `DockControl_<versión>_x64-setup.exe` (NSIS)
