@@ -51,7 +51,9 @@ moderna inspirada en DockStation, construida con **Tauri 2 + Rust** y
   **logs** en vivo y **gráficas** de CPU, Memoria, IO de disco e IO de red.
 - **Consola interactiva**: el botón **Exec** abre una terminal real dentro del
   contenedor (`bash`/`sh`/personalizado, configurable en Preferencias →
-  Consola), o un terminal del sistema con `docker exec -it`.
+  Consola), o un terminal del sistema con `docker exec -it`. Si el shell
+  configurado no existe en el contenedor, detecta y usa `bash`/`sh`/`ash`/`zsh`
+  automáticamente.
 - **Info**: árbol navegable con flechas a partir del `inspect` del contenedor.
 - **Proyectos**: proyectos Compose (`docker compose ls/ps`), servicios,
   logs, editor de `docker-compose.yml` e importación desde `docker run`.

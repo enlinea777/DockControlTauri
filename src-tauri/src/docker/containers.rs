@@ -100,6 +100,26 @@ pub async fn exec(
     Ok(output)
 }
 
+/// Detect an available shell inside the container. Uses the requested binary
+/// first and falls back to `bash`, `sh`, `ash`, `zsh`. Returns the binary name
+/// to use (never fails; falls back to the requested name).
+async fn resolve_shell(state: &AppState, id: &str, requested: &str) -> String {
+    let bin = requested.split_whitespace().next().unwrap_or("sh").to_string();
+    let safe = bin.replace('\'', "");
+    let script = format!(
+        "for s in '{safe}' bash sh ash zsh; do command -v \"$s\" >/dev/null 2>&1 && {{ echo \"$s\"; exit 0; }}; done"
+    );
+    match exec(state, id, vec!["sh".to_string(), "-c".to_string(), script], None).await {
+        Ok(out) => out
+            .lines()
+            .map(|l| l.trim().trim_end_matches('\r'))
+            .find(|l| !l.is_empty() && !l.contains("not found") && !l.contains("exec failed"))
+            .map(|s| s.to_string())
+            .unwrap_or(bin),
+        Err(_) => bin,
+    }
+}
+
 /// Start an interactive (PTY) exec session inside a container.
 ///
 /// Output is streamed through `container-exec` events carrying
@@ -116,6 +136,19 @@ pub async fn exec_start(
     use bollard::exec::{CreateExecOptions, ResizeExecOptions, StartExecResults};
     use futures_util::StreamExt;
     use tauri::Manager;
+
+    // Fall back to an available shell if the requested one is missing.
+    let mut cmd = cmd;
+    let mut shell_notice: Option<String> = None;
+    if let Some(first) = cmd.first().cloned() {
+        let resolved = resolve_shell(state, id, &first).await;
+        if resolved != first && !cmd.is_empty() {
+            shell_notice = Some(format!(
+                "[shell: {resolved}] (no se encontró '{first}' en el contenedor)"
+            ));
+            cmd[0] = resolved;
+        }
+    }
 
     let docker = crate::docker::connection::current(state)?;
     let config = CreateExecOptions::<String> {
@@ -158,6 +191,16 @@ pub async fn exec_start(
                         input: tx,
                         exec_id: exec_id.clone(),
                     },
+                );
+            }
+
+            if let Some(notice) = &shell_notice {
+                let _ = app.emit(
+                    "container-exec",
+                    serde_json::json!({
+                        "id": session,
+                        "data": format!("\r\n\x1b[33m{notice}\x1b[0m\r\n"),
+                    }),
                 );
             }
 
